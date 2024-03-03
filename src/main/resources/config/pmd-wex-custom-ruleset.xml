@@ -1,0 +1,138 @@
+<?xml version="1.0"?>
+<ruleset xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="Custom PMD Ruleset"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 http://pmd.sourceforge.net/ruleset_2_0_0.xsd">
+
+    <description>This ruleset checks code for potential mess</description>
+    <rule name="ConstructorShouldDoInitialization" message="Avoid doing field initialization outside constructor."
+          language="java" class="net.sourceforge.pmd.lang.rule.XPathRule">
+        <description>
+            Avoid doing field initialization outside class constructor.
+            Such initialization is allowed only when there is no constructor.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+                    <![CDATA[
+                        //ClassOrInterfaceBody
+                        [count(ClassOrInterfaceBodyDeclaration/ConstructorDeclaration)>0]
+                        [count(ClassOrInterfaceBodyDeclaration/FieldDeclaration[@Static='false']/VariableDeclarator/VariableInitializer)>0]
+                    ]]>
+                </value>
+            </property>
+        </properties>
+    </rule>
+    <rule name="OnlyOneConstructorShouldDoInitialization" message="Avoid field initialization in several constructors."
+          language="java" class="net.sourceforge.pmd.lang.rule.XPathRule">
+        <description>
+            Avoid doing field initialization in several constructors.
+            Only one main constructor should do real work.
+            Other constructors should delegate initialization to it.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+                    <![CDATA[
+                            //ClassOrInterfaceBody[count(ClassOrInterfaceBodyDeclaration/ConstructorDeclaration)>1]
+                            [count(ClassOrInterfaceBodyDeclaration/ConstructorDeclaration[BlockStatement])>1]
+                    ]]>
+                </value>
+            </property>
+        </properties>
+    </rule>
+    <rule name="ConstructorOnlyInitializesOrCallOtherConstructors"
+          message="Only field initialization or call to other constructors in a constructor." language="java"
+          class="net.sourceforge.pmd.lang.rule.XPathRule">
+        <description>
+            Avoid putting anything other than field assignments into constructors.
+            The only exception should be calling other constructors
+            or calling super class constructor.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+                    <![CDATA[
+                            //ConstructorDeclaration/BlockStatement[count(Statement/StatementExpression/PrimaryExpression[count(following-sibling::AssignmentOperator[1])>0]/PrimaryPrefix[@ThisModifier="true"])!=count(*)]
+                    ]]>
+                </value>
+            </property>
+        </properties>
+    </rule>
+    <rule name="ProhibitFilesCreateFileInTests"
+          message="Files.createFile should not be used in tests, replace them with @Rule TemporaryFolder"
+          language="java" class="net.sourceforge.pmd.lang.rule.XPathRule">
+        <description>
+            Files.createFile shouldn't be used in tests.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+                    <![CDATA[
+                        //ClassOrInterfaceDeclaration[ends-with(@SimpleName, 'Test')]//PrimaryPrefix/Name[@Image='Files.createFile']
+                    ]]>
+                </value>
+            </property>
+        </properties>
+    </rule>
+    <rule name="DtoAnnotations" language="java"
+          message="Classes DTO devem conter anotacoes '@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)', '@JsonIgnoreProperties(ignoreUnknown = true)' e '@JsonInclude(Include.NON_NULL)'"
+          class="net.sourceforge.pmd.lang.rule.XPathRule">
+        <description>
+            Regra que detecta se classe com sufixo Dto presente em pacotes dto, possuem as anotaçãoes
+            @JsonIgnoreProperties(ignoreUnknown = true)
+            @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="version" value="2.0"/>
+            <property name="xpath">
+                <value>
+                    <![CDATA[
+                        //ClassOrInterfaceDeclaration[@Interface = false()
+                            and ../../PackageDeclaration/Name[contains(@Image, '.wex.')]
+                            and ../../PackageDeclaration/Name[ends-with(@Image, '.dto') or contains(@Image, '.dto.')]
+                            and not(../Annotation/SingleMemberAnnotation[@AnnotationName = 'JsonNaming'
+                                    and //ClassOrInterfaceType[@Image = 'PropertyNamingStrategies.SnakeCaseStrategy']]
+                                    and ../Annotation/NormalAnnotation[@AnnotationName = 'JsonIgnoreProperties' and //MemberValuePair[@Image = 'ignoreUnknown']]
+                                    and ../Annotation/SingleMemberAnnotation[@AnnotationName = 'JsonInclude' and //MemberValue//Name[@Image = 'Include.NON_NULL']]
+                            )
+                        ]
+                    ]]>
+                </value>
+            </property>
+        </properties>
+    </rule>
+
+    <rule name="InvalidImplImport" language="java" message="Implementation class import is prohibited"
+          class="net.sourceforge.pmd.lang.rule.XPathRule">
+        <description>
+            Rule that prohibits references to classes in implementation packages. Except in the case of inheritance and
+            classes that configure the application context such as application and config.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="basePackage" type="String" value="br.com.wex"
+                      description="Run rule from base package"/>
+            <property name="skipAnnotations" type="List[String]" value="SpringBootApplication, Configuration"
+                      description="List of class notes to ignore rule"/>
+            <property name="version" value="2.0"/>
+            <property name="xpath">
+                <value>
+                    <![CDATA[
+                        //ImportDeclaration/Name
+                            [starts-with(@Image, $basePackage) and (ends-with(@Image, '.impl') or contains(@Image, '.impl.'))]
+                            [not(//ClassOrInterfaceDeclaration[../Annotation/MarkerAnnotation/Name[contains($skipAnnotations, @Image)]])]
+                            [not(//ClassOrInterfaceDeclaration/ExtendsList/ClassOrInterfaceType[
+                                @Image = //ImportDeclaration[starts-with(@PackageName, $basePackage) and (ends-with(@PackageName, '.impl') or contains(@PackageName, '.impl.'))]/@ImportedSimpleName
+                            ])]
+                    ]]>
+                </value>
+            </property>
+        </properties>
+    </rule>
+</ruleset>

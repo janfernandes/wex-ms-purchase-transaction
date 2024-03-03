@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+        "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+<suppressions>
+    <!-- ignore javadoc in classes and methods that follow the pattern of package and file names according to
+    regex. Lowercase names are applied to packages and uppercase names to files.
+      -->
+    <suppress checks="MissingJavadocType|MissingJavadocMethod"
+              files=".+(Controller|Exception|Repository|converters|infrastructure|impl).*.java"/>
+    <suppress checks="MissingJavadocType" files=".+(Impl).java"/>
+</suppressions>

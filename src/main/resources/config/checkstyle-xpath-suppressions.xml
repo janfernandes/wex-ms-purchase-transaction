@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC "-//Checkstyle//DTD SuppressionXpathFilter Experimental Configuration 1.2//EN"
+        "https://checkstyle.org/dtds/suppressions_1_2_xpath_experimental.dtd">
+
+<suppressions>
+    <!-- ignore javadoc comments in public methods of application config classes -->
+    <!-- the xpath below looks if the class has the @Configuration annotation -->
+    <suppress-xpath checks="MissingJavadocMethod"
+                    query="
+        //METHOD_DEF[
+            //CLASS_DEF[.//ANNOTATION[
+                ./IDENT[@text='Configuration']
+        ]]]"/>
+
+    <!-- ignores the appointment of utility classes without private constructor with @UtilityClass annotation -->
+    <!-- the xpath below looks to see if the class has the @UtilityClass annotation -->
+    <suppress-xpath checks="HideUtilityClassConstructor"
+                    query="
+        //CLASS_DEF[.//ANNOTATION[
+            ./IDENT[@text='UtilityClass']
+        ]]"/>
+
+    <!-- ignore javadoc comment in ENUM constants with description -->
+    <!-- xpath below looks if the constant has a string parameter with a size greater than 3 and contains spaces -->
+    <!-- we understand that this string describes the constant and therefore the javadoc is optional -->
+    <suppress-xpath checks="JavadocVariable"
+                    query="//ENUM_CONSTANT_DEF[./ELIST/EXPR[./STRING_LITERAL[string-length(@text)>3 and contains(@text, ' ')]]]"/>
+
+</suppressions>
