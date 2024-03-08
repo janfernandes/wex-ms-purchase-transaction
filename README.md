@@ -26,7 +26,7 @@ mvn package
 
 Then, execute it
 ```bash
-java -jar wex-ms-purchase-transaction-1.0.0.jar --spring.datasource.username=root --spring.datasource.password=root
+docker-compose -f docker-compose.yml up
 ```
 
 ## API Documentation
